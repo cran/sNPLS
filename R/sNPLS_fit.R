@@ -131,28 +131,24 @@ sNPLS <- function(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000, keepJ
 #' @description Builds the R-matrix from a sNPLS model fit
 #' @param x A sNPLS model obtained from \code{sNPLS}
 #' @return Returns the R-matrix of the model, needed to compute the coefficients
-Rmatrix <- function(x) {
-    WsupraK <- x$Wk
-    WsupraJ <- x$Wj
-    R <- matrix(nrow = dim(x$Wj)[1] * dim(x$Wk)[1], ncol = x$ncomp)
-    ncomp <- x$ncomp
-    for (i in 1:ncomp) {
-        if (i == 1) {
-            w <- kronecker(WsupraK[, 1], WsupraJ[, 1])
-            R[, i] <- w
-        }
-        if (i > 1) {
-            pi <- diag(dim(R)[1])
-            for (j in 1:(i - 1)) {
-                w <- kronecker(WsupraK[, j], WsupraJ[, j])
-                pi <- pi %*% diag(dim(R)[1]) - w %*% t(w)
-            }
-            w <- kronecker(WsupraK[, i], WsupraJ[, i])
-            pi <- pi %*% w
-            R[, i] <- pi
-        }
+Rmatrix<-function(x) {
+  WsupraK <- x$Wk
+  WsupraJ <- x$Wj
+  R <- matrix(nrow = dim(x$Wj)[1] * dim(x$Wk)[1], ncol = x$ncomp)
+  ncomp <- x$ncomp
+  kroneckers<-sapply(1:x$ncomp, function(x) kronecker(WsupraK[, x], WsupraJ[, x]))
+  tkroneckers<-apply(kroneckers, 2, function(x) t(x))
+  R[,1] <- kroneckers[,1]
+  for(i in 2:ncomp){
+    pi <- pi0 <- Matrix::Matrix(diag(dim(R)[1]), sparse=TRUE)
+    for (j in 1:(i - 1)) {
+      pi <- Matrix::Matrix(pi %*% pi0 - kroneckers[,j] %*% t(tkroneckers[,j]), sparse=TRUE)
     }
-    return(R)
+    w <- kroneckers[, i]
+    pi <- pi %*% w
+    R[, i] <- Matrix::as.matrix(pi)
+  }
+  return(R)
 }
 
 #' Unfolding of three-way arrays
@@ -187,8 +183,8 @@ unfold3w <- function(x) {
 #' @export
 cv_snpls <- function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK = 1:dim(X_npls)[3],
     nfold = 10, parallel = TRUE, free_cores = 2) {
-    if (parallel) {
-        cl <- parallel::makeCluster(parallel::detectCores() - free_cores)
+    if (parallel & (parallel::detectCores()>1)) {
+        cl <- parallel::makeCluster(max(2, parallel::detectCores() - free_cores))
         parallel::clusterExport(cl, list(deparse(substitute(X_npls)), deparse(substitute(Y_npls))))
         parallel::clusterCall(cl, function() require(sNPLS))
     }
@@ -198,9 +194,9 @@ cv_snpls <- function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK 
     SqrdE <- numeric()
     applied_fun <- function(y) {
         sapply(1:nfold, function(x) {
-            cv_fit(xtrain = X_npls[x != foldid, , ], ytrain = Y_npls[x != foldid, , drop = FALSE],
+            tryCatch(cv_fit(xtrain = X_npls[x != foldid, , ], ytrain = Y_npls[x != foldid, , drop = FALSE],
                 xval = X_npls[x == foldid, , ], yval = Y_npls[x == foldid, , drop = FALSE], ncomp = y["ncomp"],
-                keepJ = rep(y["keepJ"], y["ncomp"]), keepK = rep(y["keepK"], y["ncomp"]))
+                keepJ = rep(y["keepJ"], y["ncomp"]), keepK = rep(y["keepK"], y["ncomp"])), error=function(x) NA)
         })
     }
     if (parallel) {
@@ -208,7 +204,7 @@ cv_snpls <- function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK 
         parallel::stopCluster(cl)
     } else cv_res <- pbapply::pbapply(search.grid, 1, applied_fun)
     cv_mean <- apply(cv_res, 2, function(x) mean(x, na.rm = TRUE))
-    cv_se <- apply(cv_res, 2, function(x) sd(x)/sqrt(nfold))
+    cv_se <- apply(cv_res, 2, function(x) sd(x, na.rm=TRUE)/sqrt(nfold))
     best_model <- search.grid[which.min(cv_mean), ]
     output <- list(best_parameters = best_model, cv_mean = cv_mean, cv_se = cv_se, cv_grid = search.grid)
     class(output)<-"cvsNPLS"
@@ -294,10 +290,11 @@ plot_Wj <- function(x, comps = c(1, 2), ...) {
   plot(x$Wj[, comps[1]], x$Wj[, comps[2]], pch = 16, xlab = colnames(x$Wj)[comps[1]], ylab = colnames(x$Wj)[comps[2]],
        ...)
   abline(h = 0, v = 0, lty = 2)
-  text(x$Wj[, comps[1]][x$Wj[, comps[1]] != 0 | x$Wj[, comps[2]] != 0], x$Wj[, comps[2]][x$Wj[,
-                                                                                              comps[1]] != 0 | x$Wj[, comps[2]] != 0], pos = plotrix::thigmophobe(x$Wj[, comps[1]][x$Wj[,
-                                                                                                                                                                                        comps[1]] != 0 | x$Wj[, comps[2]] != 0], x$Wj[, comps[2]][x$Wj[, comps[1]] != 0 | x$Wj[,
-                                                                                                                                                                                                                                                                               comps[2]] != 0]))
+  text(x$Wj[, comps[1]][x$Wj[, comps[1]] != 0 | x$Wj[, comps[2]] != 0],
+       x$Wj[, comps[2]][x$Wj[,comps[1]] != 0 | x$Wj[, comps[2]] != 0],
+       pos = tryCatch(plotrix::thigmophobe(x$Wj[, comps[1]][x$Wj[, comps[1]] != 0 | x$Wj[, comps[2]] != 0],
+                                  x$Wj[, comps[2]][x$Wj[, comps[1]] != 0 | x$Wj[, comps[2]] != 0]), error=function(x) 1),
+       labels = which(x$Wj[, comps[1]] != 0 | x$Wj[, comps[2]] != 0))
 }
 
 #' Internal function for \code{plot.sNPLS}
@@ -310,10 +307,11 @@ plot_Wk <- function(x, comps = c(1, 2), ...) {
   plot(x$Wk[, comps[1]], x$Wk[, comps[2]], pch = 16, xlab = colnames(x$Wk)[comps[1]], ylab = colnames(x$Wk)[comps[2]],
        ...)
   abline(h = 0, v = 0, lty = 2)
-  text(x$Wk[, comps[1]][x$Wk[, comps[1]] != 0 | x$Wk[, comps[2]] != 0], x$Wk[, comps[2]][x$Wk[,
-                                                                                              comps[1]] != 0 | x$Wk[, comps[2]] != 0], pos = plotrix::thigmophobe(x$Wk[, comps[1]][x$Wk[,
-                                                                                                                                                                                        comps[1]] != 0 | x$Wk[, comps[2]] != 0], x$Wk[, comps[2]][x$Wk[, comps[1]] != 0 | x$Wk[,
-                                                                                                                                                                                                                                                                               comps[2]] != 0]))
+  text(x$Wk[, comps[1]][x$Wk[, comps[1]] != 0 | x$Wk[, comps[2]] != 0],
+       x$Wk[, comps[2]][x$Wk[,comps[1]] != 0 | x$Wk[, comps[2]] != 0],
+       pos = tryCatch(plotrix::thigmophobe(x$Wk[, comps[1]][x$Wk[, comps[1]] != 0 | x$Wk[, comps[2]] != 0],
+                                  x$Wk[, comps[2]][x$Wk[, comps[1]] != 0 | x$Wk[, comps[2]] != 0]), error=function(x) 1),
+       labels = which(x$Wk[, comps[1]] != 0 | x$Wk[, comps[2]] != 0))
 }
 
 #' Internal function for \code{plot.sNPLS}
@@ -377,4 +375,32 @@ coef.sNPLS <- function(object, as.matrix = FALSE, ...) {
   if (as.matrix)
     dim(Bnpls) <- c(dim(object$Wj)[1], dim(object$Wk)[1])
   return(Bnpls)
+}
+
+#' Repeated cross-validation for sNPLS models
+#'
+#' @description Performs repeated cross-validation and represents results in a plot
+#' @param X_npls A three-way array containing the predictors.
+#' @param Y_npls A matrix containing the response.
+#' @param ncomp A vector with the different number of components to test
+#' @param keepJ A vector with the different number of selected variables to test
+#' @param keepK A vector with the different number of selected 'times' to test
+#' @param nfold Number of folds for the cross-validation
+#' @param parallel Should the computations be performed in parallel?
+#' @param free_cores If parallel computations are performed how many cores are left unused
+#' @param times Number of repetitions of the cross-validation
+#' @return A density plot with the results of the cross-validation
+#' @importFrom stats var
+#' @export
+repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK = 1:dim(X_npls)[3],
+                    nfold = 10, parallel = TRUE, free_cores = 2, times=30){
+  rep_cv<-pbapply::pbreplicate(times, cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = parallel, nfold = nfold))
+  resdata<-data.frame(ncomp=sapply(rep_cv[1,], function(x) x[[1]]), keepJ=sapply(rep_cv[1,], function(x) x[[2]]),
+                      keepK=sapply(rep_cv[1,], function(x) x[[3]]))
+  invariantes<-names(resdata)[sapply(resdata, function(x) var(x, na.rm=TRUE)==0)]
+  resdata2<-resdata[,sapply(resdata, function(x) var(x, na.rm=TRUE)!=0)]
+  H.pi <- ks::Hpi(resdata2)
+  fhat <- ks::kde(resdata2, H=H.pi, compute.cont=TRUE)
+  print(paste(invariantes, " is(are) constant with a value of ", resdata[1,invariantes], sep=""))
+  plot(fhat)
 }

@@ -1,6 +1,6 @@
-19f30d0ab0f981a9d7af3a3c01e009d7 *DESCRIPTION
-04159c4afd9ae663a4cebdccbd904274 *NAMESPACE
-58e3619bfde9bdd8457e2afa8d3b39e5 *R/sNPLS_fit.R
+3cbdcb204d0cb5b6ec3cfa0535e6688d *DESCRIPTION
+8638f30dc828cc0fc50966388755b0a1 *NAMESPACE
+75dec1e005b02872f33db994bdc1e840 *R/sNPLS_fit.R
 02021e0c39c464c5fe2abc04478afae2 *man/Rmatrix.Rd
 9de7c4d836ce21be9ae7d4c26e920f5f *man/coef.sNPLS.Rd
 8d73d7e14682f442b5f09955d0e90657 *man/cv_fit.Rd
@@ -13,5 +13,6 @@
 04ca13657ee9aa4bb4c83762a2012720 *man/plot_Wk.Rd
 fa48f751452d894a6f3ea891b8760d05 *man/plot_time.Rd
 4ba29fa77b6e54d3dad497abf00970b9 *man/predict.sNPLS.Rd
+1e7a45587db41ccd14604c45fc8ec7f2 *man/repeat_cv.Rd
 7eb2bcadcb3bf1c276e47b3ad0081bef *man/sNPLS.Rd
 ed447fad8e0ca1dc5194ccb2d25383c2 *man/unfold3w.Rd
