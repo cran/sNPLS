@@ -139,14 +139,16 @@ Rmatrix<-function(x) {
   kroneckers<-sapply(1:x$ncomp, function(x) kronecker(WsupraK[, x], WsupraJ[, x]))
   tkroneckers<-apply(kroneckers, 2, function(x) t(x))
   R[,1] <- kroneckers[,1]
-  for(i in 2:ncomp){
-    pi <- pi0 <- Matrix::Matrix(diag(dim(R)[1]), sparse=TRUE)
-    for (j in 1:(i - 1)) {
-      pi <- Matrix::Matrix(pi %*% pi0 - kroneckers[,j] %*% t(tkroneckers[,j]), sparse=TRUE)
+  if(ncomp>1){
+    for(i in 2:ncomp){
+      pi <- pi0 <- Matrix::Matrix(diag(dim(R)[1]), sparse=TRUE)
+      for (j in 1:(i - 1)) {
+        pi <- Matrix::Matrix(pi %*% pi0 - kroneckers[,j] %*% t(tkroneckers[,j]), sparse=TRUE)
+      }
+      w <- kroneckers[, i]
+      pi <- pi %*% w
+      R[, i] <- Matrix::as.matrix(pi)
     }
-    w <- kroneckers[, i]
-    pi <- pi %*% w
-    R[, i] <- Matrix::as.matrix(pi)
   }
   return(R)
 }
