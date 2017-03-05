@@ -27,4 +27,3 @@ Returns the CV mean squared error
 \description{
 Internal function for \code{cv_snpls}
 }
-

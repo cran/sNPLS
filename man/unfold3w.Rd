@@ -15,4 +15,3 @@ Returns a matrix with dimensions \code{dim(x)[1] x dim(x)[2]*dim(x([3]))}
 \description{
 Unfolds a three-way array into a matrix
 }
-

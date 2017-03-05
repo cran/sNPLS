@@ -21,4 +21,3 @@ A plot of the type specified in the \code{type} parameter
 \description{
 Different plots for sNPLS model fits
 }
-

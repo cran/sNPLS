@@ -19,4 +19,3 @@ A plot of the T matrix of a sNPLS model fit
 \description{
 Internal function for \code{plot.sNPLS}
 }
-

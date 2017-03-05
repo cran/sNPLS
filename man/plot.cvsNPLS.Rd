@@ -17,4 +17,3 @@ A 3D scatter plot with the results of the cross validation
 \description{
 Plot function for visualization of cross validation results for sNPLS models
 }
-

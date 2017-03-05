@@ -17,4 +17,3 @@ A plot of Wk coefficients for each component
 \description{
 Internal function for \code{plot.sNPLS}
 }
-

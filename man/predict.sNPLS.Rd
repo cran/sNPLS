@@ -21,4 +21,3 @@ A matrix with the predictions
 \description{
 Predict function for sNPLS models
 }
-

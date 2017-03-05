@@ -406,3 +406,17 @@ repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK =
   print(paste(invariantes, " is(are) constant with a value of ", resdata[1,invariantes], sep=""))
   plot(fhat)
 }
+
+#' Summary for sNPLS models
+#'
+#' @description Summary of a sNPLS model fit
+#' @param object A sNPLS object
+#' @param ... Further arguments passed to summary.default
+#' @return A summary inclunding number of components, squared error and coefficients of the fitted model
+#' @importFrom stats coef
+#' @export
+summary.sNPLS <- function(object, ...){
+  cat("sNPLS model with", object$ncomp, "components and squared error of", round(object$SqrdE,3), "\n", "\n")
+  cat("Coefficients: \n")
+  round(coef(object, as.matrix=TRUE),3)
+}

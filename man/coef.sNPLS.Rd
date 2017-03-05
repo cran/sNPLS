@@ -19,4 +19,3 @@ A matrix (or vector) of coefficients
 \description{
 Extract coefficients from a sNPLS model
 }
-

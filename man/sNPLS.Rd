@@ -44,4 +44,3 @@ C. A. Andersson and R. Bro. The N-way Toolbox for MATLAB Chemometrics & Intellig
 
 Shen, H. and Huang, J. Z. (2008). Sparse principal component analysis via regularized low rank matrix approximation. Journal of Multivariate Analysis 99, 1015-1034
 }
-

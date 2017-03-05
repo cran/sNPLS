@@ -38,4 +38,3 @@ Y_npls<-matrix(2+0.4*X_npls[,5,1]+0.7*X_npls[,10,1]-0.9*X_npls[,15,1]+
 
 cv1<- cv_snpls(X_npls, Y_npls, ncomp=1:2, keepJ = 1:10, keepK = 1:3, parallel = FALSE)
 }
-

@@ -15,4 +15,3 @@ Returns the R-matrix of the model, needed to compute the coefficients
 \description{
 Builds the R-matrix from a sNPLS model fit
 }
-

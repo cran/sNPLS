@@ -33,4 +33,3 @@ A density plot with the results of the cross-validation
 \description{
 Performs repeated cross-validation and represents results in a plot
 }
-

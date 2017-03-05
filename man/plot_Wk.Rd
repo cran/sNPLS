@@ -19,4 +19,3 @@ A plot of the Wk coefficients
 \description{
 Internal function for \code{plot.sNPLS}
 }
-

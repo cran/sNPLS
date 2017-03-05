@@ -19,4 +19,3 @@ A plot of Wj coefficients
 \description{
 Internal function for \code{plot.sNPLS}
 }
-
