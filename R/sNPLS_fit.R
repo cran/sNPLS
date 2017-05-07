@@ -176,12 +176,14 @@ unfold3w <- function(x) {
 #' @param free_cores If parallel computations are performed how many cores are left unused
 #' @return A list with the best parameters for the model and the CV error
 #' @examples
+#' \dontrun{
 #' X_npls<-array(rpois(7500, 10), dim=c(50, 50, 3))
 #'
 #' Y_npls<-matrix(2+0.4*X_npls[,5,1]+0.7*X_npls[,10,1]-0.9*X_npls[,15,1]+
 #' 0.6*X_npls[,20,1]- 0.5*X_npls[,25,1]+rnorm(50), ncol=1)
 #'
-#' cv1<- cv_snpls(X_npls, Y_npls, ncomp=1:2, keepJ = 1:10, keepK = 1:3, parallel = FALSE)
+#' cv1<- cv_snpls(X_npls, Y_npls, ncomp=1:2, keepJ = 1:3, keepK = 1:2, parallel = FALSE)
+#' }
 #' @export
 cv_snpls <- function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK = 1:dim(X_npls)[3],
     nfold = 10, parallel = TRUE, free_cores = 2) {
@@ -262,7 +264,8 @@ plot.sNPLS <- function(x, comps = c(1, 2), type = "T", ...) {
 #' @return A plot of the T matrix of a sNPLS model fit
 plot_T <- function(x, comps = c(1, 2), ...) {
   plot(x$T[, comps[1]], x$T[, comps[2]], pch = 16, xlab = colnames(x$T)[comps[1]], ylab = colnames(x$T)[comps[2]],
-       ...)
+       ylim=c(min(x$T[, comps[2]])-diff(range(x$T[, comps[2]]))/10, max(x$T[, comps[2]])+diff(range(x$T[, comps[2]]))/10),
+       xlim=c(min(x$T[, comps[1]])-diff(range(x$T[, comps[1]]))/10, max(x$T[, comps[1]])+diff(range(x$T[, comps[1]]))/10), ...)
   abline(h = 0, v = 0, lty = 2)
   text(x$T[, comps[1]], x$T[, comps[2]], labels = rownames(x$T), pos = plotrix::thigmophobe(x$T[,
                                                                                                 comps[1]], x$T[, comps[2]]))
@@ -276,7 +279,8 @@ plot_T <- function(x, comps = c(1, 2), ...) {
 #' @return A plot of the U matrix of a sNPLS model fit
 plot_U <- function(x, comps = c(1, 2), ...) {
   plot(x$U[, comps[1]], x$U[, comps[2]], pch = 16, xlab = colnames(x$U)[comps[1]], ylab = colnames(x$U)[comps[2]],
-       ...)
+       ylim=c(min(x$U[, comps[2]])-diff(range(x$U[, comps[2]]))/10, max(x$U[, comps[2]])+diff(range(x$U[, comps[2]]))/10),
+       xlim=c(min(x$U[, comps[1]])-diff(range(x$U[, comps[1]]))/10, max(x$U[, comps[1]])+diff(range(x$U[, comps[1]]))/10), ...)
   abline(h = 0, v = 0, lty = 2)
   text(x$U[, comps[1]], x$U[, comps[2]], labels = rownames(x$U), pos = plotrix::thigmophobe(x$U[,
                                                                                                 comps[1]], x$U[, comps[2]]))
@@ -290,7 +294,8 @@ plot_U <- function(x, comps = c(1, 2), ...) {
 #' @return A plot of Wj coefficients
 plot_Wj <- function(x, comps = c(1, 2), ...) {
   plot(x$Wj[, comps[1]], x$Wj[, comps[2]], pch = 16, xlab = colnames(x$Wj)[comps[1]], ylab = colnames(x$Wj)[comps[2]],
-       ...)
+       ylim=c(min(x$Wj[, comps[2]])-diff(range(x$Wj[, comps[2]]))/10, max(x$Wj[, comps[2]])+diff(range(x$Wj[, comps[2]]))/10),
+       xlim=c(min(x$Wj[, comps[1]])-diff(range(x$Wj[, comps[1]]))/10, max(x$Wj[, comps[1]])+diff(range(x$Wj[, comps[1]]))/10), ...)
   abline(h = 0, v = 0, lty = 2)
   text(x$Wj[, comps[1]][x$Wj[, comps[1]] != 0 | x$Wj[, comps[2]] != 0],
        x$Wj[, comps[2]][x$Wj[,comps[1]] != 0 | x$Wj[, comps[2]] != 0],
@@ -307,7 +312,8 @@ plot_Wj <- function(x, comps = c(1, 2), ...) {
 #' @return A plot of the Wk coefficients
 plot_Wk <- function(x, comps = c(1, 2), ...) {
   plot(x$Wk[, comps[1]], x$Wk[, comps[2]], pch = 16, xlab = colnames(x$Wk)[comps[1]], ylab = colnames(x$Wk)[comps[2]],
-       ...)
+       ylim=c(min(x$Wk[, comps[2]])-diff(range(x$Wk[, comps[2]]))/10, max(x$Wk[, comps[2]])+diff(range(x$Wk[, comps[2]]))/10),
+       xlim=c(min(x$Wk[, comps[1]])-diff(range(x$Wk[, comps[1]]))/10, max(x$Wk[, comps[1]])+diff(range(x$Wk[, comps[1]]))/10), ...)
   abline(h = 0, v = 0, lty = 2)
   text(x$Wk[, comps[1]][x$Wk[, comps[1]] != 0 | x$Wk[, comps[2]] != 0],
        x$Wk[, comps[2]][x$Wk[,comps[1]] != 0 | x$Wk[, comps[2]] != 0],
@@ -396,7 +402,15 @@ coef.sNPLS <- function(object, as.matrix = FALSE, ...) {
 #' @export
 repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK = 1:dim(X_npls)[3],
                     nfold = 10, parallel = TRUE, free_cores = 2, times=30){
-  rep_cv<-pbapply::pbreplicate(times, cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = parallel, nfold = nfold))
+  if(parallel & (parallel::detectCores()>1)){
+    cl <- parallel::makeCluster(max(2, parallel::detectCores() - free_cores))
+    parallel::clusterExport(cl, list(deparse(substitute(X_npls)), deparse(substitute(Y_npls))))
+    parallel::clusterCall(cl, function() require(sNPLS))
+    rep_cv<-parallel::parSapply(cl, 1:times, function(x) cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = FALSE, nfold = nfold))
+    parallel::stopCluster(cl)
+  } else {
+    rep_cv<-pbapply::pbreplicate(times, cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = FALSE, nfold = nfold))
+  }
   resdata<-data.frame(ncomp=sapply(rep_cv[1,], function(x) x[[1]]), keepJ=sapply(rep_cv[1,], function(x) x[[2]]),
                       keepK=sapply(rep_cv[1,], function(x) x[[3]]))
   invariantes<-names(resdata)[sapply(resdata, function(x) var(x, na.rm=TRUE)==0)]
@@ -405,6 +419,7 @@ repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK =
   fhat <- ks::kde(resdata2, H=H.pi, compute.cont=TRUE)
   print(paste(invariantes, " is(are) constant with a value of ", resdata[1,invariantes], sep=""))
   plot(fhat)
+  return(invisible(resdata2))
 }
 
 #' Summary for sNPLS models
