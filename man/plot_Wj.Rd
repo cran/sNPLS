@@ -4,7 +4,7 @@
 \alias{plot_Wj}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_Wj(x, comps = c(1, 2), ...)
+plot_Wj(x, comps, ...)
 }
 \arguments{
 \item{x}{A sNPLS model fit}

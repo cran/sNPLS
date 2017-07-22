@@ -4,10 +4,12 @@
 \alias{plot_time}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_time(x, ...)
+plot_time(x, comps, ...)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
+
+\item{comps}{A vector with the components to plot}
 
 \item{...}{Options passed to \code{plot}}
 }

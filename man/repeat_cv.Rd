@@ -28,7 +28,7 @@ repeat_cv(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
 \item{times}{Number of repetitions of the cross-validation}
 }
 \value{
-A density plot with the results of the cross-validation
+A density plot with the results of the cross-validation and an (invisible) \code{data.frame} with these results
 }
 \description{
 Performs repeated cross-validation and represents results in a plot

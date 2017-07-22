@@ -4,7 +4,7 @@
 \alias{plot_Wk}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_Wk(x, comps = c(1, 2), ...)
+plot_Wk(x, comps, ...)
 }
 \arguments{
 \item{x}{A sNPLS model fit}

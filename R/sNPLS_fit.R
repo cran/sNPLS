@@ -27,8 +27,6 @@ sNPLS <- function(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000, keepJ
     mynorm <- function(x) sqrt(sum(diag(crossprod(x))))
     if (length(dim(XN)) != 3)
         stop("'XN' is not a three-way array")
-    # if (ncol(as.matrix(Y))<=1 & length(unique(Y))<=2) stop(''Y' no se ha preparado correctamente
-    # para sNPLS-DA')
     if (!is.null(rownames(XN)))
         y.names <- x.names <- rownames(XN) else y.names <- x.names <- 1:dim(XN)[1]
     if (!is.null(colnames(XN)))
@@ -238,12 +236,12 @@ cv_fit <- function(xtrain, ytrain, xval, yval, ncomp, keepJ, keepK) {
 #' @description Different plots for sNPLS model fits
 #' @param x A sNPLS model fit
 #' @param comps A vector of length two with the components to plot
-#' @param type The type of plot. One of those: "T", "U", "Wj", "Wk" or "time"
+#' @param type The type of plot. One of those: "T", "U", "Wj", "Wk", "time" or "variables"
 #' @param ... Options passed to \code{plot}
 #' @return A plot of the type specified in the \code{type} parameter
 #' @importFrom graphics abline matplot plot text
 #' @export
-plot.sNPLS <- function(x, comps = c(1, 2), type = "T", ...) {
+plot.sNPLS <- function(x, type = "T", comps = c(1, 2), ...) {
   if (type == "T")
     plot_T(x, comps = comps, ...)
   if (type == "U")
@@ -254,6 +252,8 @@ plot.sNPLS <- function(x, comps = c(1, 2), type = "T", ...) {
     plot_Wk(x, comps = comps, ...)
   if (type == "time")
     plot_time(x, comps = comps, ...)
+  if (type == "variables")
+    plot_variables(x, comps = comps, ...)
 }
 
 #' Internal function for \code{plot.sNPLS}
@@ -262,7 +262,7 @@ plot.sNPLS <- function(x, comps = c(1, 2), type = "T", ...) {
 #' @param comps A vector of length two with the components to plot
 #' @param ... Options passed to \code{plot}
 #' @return A plot of the T matrix of a sNPLS model fit
-plot_T <- function(x, comps = c(1, 2), ...) {
+plot_T <- function(x, comps, ...) {
   plot(x$T[, comps[1]], x$T[, comps[2]], pch = 16, xlab = colnames(x$T)[comps[1]], ylab = colnames(x$T)[comps[2]],
        ylim=c(min(x$T[, comps[2]])-diff(range(x$T[, comps[2]]))/10, max(x$T[, comps[2]])+diff(range(x$T[, comps[2]]))/10),
        xlim=c(min(x$T[, comps[1]])-diff(range(x$T[, comps[1]]))/10, max(x$T[, comps[1]])+diff(range(x$T[, comps[1]]))/10), ...)
@@ -277,7 +277,7 @@ plot_T <- function(x, comps = c(1, 2), ...) {
 #' @param comps A vector of length two with the components to plot
 #' @param ... Options passed to \code{plot}
 #' @return A plot of the U matrix of a sNPLS model fit
-plot_U <- function(x, comps = c(1, 2), ...) {
+plot_U <- function(x, comps, ...) {
   plot(x$U[, comps[1]], x$U[, comps[2]], pch = 16, xlab = colnames(x$U)[comps[1]], ylab = colnames(x$U)[comps[2]],
        ylim=c(min(x$U[, comps[2]])-diff(range(x$U[, comps[2]]))/10, max(x$U[, comps[2]])+diff(range(x$U[, comps[2]]))/10),
        xlim=c(min(x$U[, comps[1]])-diff(range(x$U[, comps[1]]))/10, max(x$U[, comps[1]])+diff(range(x$U[, comps[1]]))/10), ...)
@@ -292,7 +292,7 @@ plot_U <- function(x, comps = c(1, 2), ...) {
 #' @param comps A vector of length two with the components to plot
 #' @param ... Options passed to \code{plot}
 #' @return A plot of Wj coefficients
-plot_Wj <- function(x, comps = c(1, 2), ...) {
+plot_Wj <- function(x, comps, ...) {
   plot(x$Wj[, comps[1]], x$Wj[, comps[2]], pch = 16, xlab = colnames(x$Wj)[comps[1]], ylab = colnames(x$Wj)[comps[2]],
        ylim=c(min(x$Wj[, comps[2]])-diff(range(x$Wj[, comps[2]]))/10, max(x$Wj[, comps[2]])+diff(range(x$Wj[, comps[2]]))/10),
        xlim=c(min(x$Wj[, comps[1]])-diff(range(x$Wj[, comps[1]]))/10, max(x$Wj[, comps[1]])+diff(range(x$Wj[, comps[1]]))/10), ...)
@@ -310,7 +310,7 @@ plot_Wj <- function(x, comps = c(1, 2), ...) {
 #' @param comps A vector of length two with the components to plot
 #' @param ... Options passed to \code{plot}
 #' @return A plot of the Wk coefficients
-plot_Wk <- function(x, comps = c(1, 2), ...) {
+plot_Wk <- function(x, comps, ...) {
   plot(x$Wk[, comps[1]], x$Wk[, comps[2]], pch = 16, xlab = colnames(x$Wk)[comps[1]], ylab = colnames(x$Wk)[comps[2]],
        ylim=c(min(x$Wk[, comps[2]])-diff(range(x$Wk[, comps[2]]))/10, max(x$Wk[, comps[2]])+diff(range(x$Wk[, comps[2]]))/10),
        xlim=c(min(x$Wk[, comps[1]])-diff(range(x$Wk[, comps[1]]))/10, max(x$Wk[, comps[1]])+diff(range(x$Wk[, comps[1]]))/10), ...)
@@ -325,10 +325,25 @@ plot_Wk <- function(x, comps = c(1, 2), ...) {
 #' Internal function for \code{plot.sNPLS}
 #'
 #' @param x A sNPLS model fit
+#' @param comps A vector with the components to plot
 #' @param ... Options passed to \code{plot}
 #' @return A plot of Wk coefficients for each component
-plot_time <- function(x, ...) {
-  matplot(1:dim(x$Wk)[1], x$Wk, type = "l", xlab = "Time", ylab = "Wk")
+#' @importFrom graphics legend
+plot_time <- function(x, comps, ...) {
+  matplot(1:dim(x$Wk[,comps])[1], x$Wk[,comps], type = "l", xlab = "Time", ylab = "Wk", col = 1:5, lty=1:5, ...)
+  legend("topright", colnames(x$Wk)[comps], col=1:5, lty=1:5)
+}
+
+#' Internal function for \code{plot.sNPLS}
+#'
+#' @param x A sNPLS model fit
+#' @param comps A vector with the components to plot
+#' @param ... Options passed to \code{plot}
+#' @return A plot of Wj coefficients for each component
+#' @importFrom graphics legend
+plot_variables <- function(x, comps, ...) {
+  matplot(1:dim(x$Wj[,comps])[1], x$Wj[,comps], type = "l", xlab = "Variables", ylab = "Wj", col = 1:5, lty=1:5, ...)
+  legend("topright", colnames(x$Wk)[comps], col=1:5, lty=1:5)
 }
 
 #' Predict for sNPLS models
@@ -397,7 +412,7 @@ coef.sNPLS <- function(object, as.matrix = FALSE, ...) {
 #' @param parallel Should the computations be performed in parallel?
 #' @param free_cores If parallel computations are performed how many cores are left unused
 #' @param times Number of repetitions of the cross-validation
-#' @return A density plot with the results of the cross-validation
+#' @return A density plot with the results of the cross-validation and an (invisible) \code{data.frame} with these results
 #' @importFrom stats var
 #' @export
 repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK = 1:dim(X_npls)[3],
@@ -419,7 +434,7 @@ repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK =
   fhat <- ks::kde(resdata2, H=H.pi, compute.cont=TRUE)
   print(paste(invariantes, " is(are) constant with a value of ", resdata[1,invariantes], sep=""))
   plot(fhat)
-  return(invisible(resdata2))
+  return(invisible(resdata))
 }
 
 #' Summary for sNPLS models

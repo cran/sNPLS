@@ -1,7 +1,7 @@
 Package: sNPLS
 Type: Package
 Title: NPLS Regression with L1 Penalization
-Version: 0.1.8
+Version: 0.2.0
 Author: David Hervas
 Maintainer: David Hervas <ddhervas@yahoo.es>
 Depends: R (>= 2.10)
@@ -17,6 +17,6 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-05-07 18:18:34 UTC; aghil
+Packaged: 2017-07-22 15:52:36 UTC; aghil
 Repository: CRAN
-Date/Publication: 2017-05-07 22:50:25 UTC
+Date/Publication: 2017-07-22 16:59:28 UTC

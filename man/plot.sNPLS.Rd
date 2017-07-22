@@ -4,14 +4,14 @@
 \alias{plot.sNPLS}
 \title{Plots for sNPLS model fits}
 \usage{
-\method{plot}{sNPLS}(x, comps = c(1, 2), type = "T", ...)
+\method{plot}{sNPLS}(x, type = "T", comps = c(1, 2), ...)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
 
-\item{comps}{A vector of length two with the components to plot}
+\item{type}{The type of plot. One of those: "T", "U", "Wj", "Wk", "time" or "variables"}
 
-\item{type}{The type of plot. One of those: "T", "U", "Wj", "Wk" or "time"}
+\item{comps}{A vector of length two with the components to plot}
 
 \item{...}{Options passed to \code{plot}}
 }

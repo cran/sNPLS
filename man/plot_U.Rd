@@ -4,7 +4,7 @@
 \alias{plot_U}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_U(x, comps = c(1, 2), ...)
+plot_U(x, comps, ...)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
