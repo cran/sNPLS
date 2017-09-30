@@ -6,7 +6,7 @@
 \usage{
 repeat_cv(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
   keepK = 1:dim(X_npls)[3], nfold = 10, parallel = TRUE, free_cores = 2,
-  times = 30)
+  times = 30, ...)
 }
 \arguments{
 \item{X_npls}{A three-way array containing the predictors.}
@@ -26,10 +26,12 @@ repeat_cv(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
 \item{free_cores}{If parallel computations are performed how many cores are left unused}
 
 \item{times}{Number of repetitions of the cross-validation}
+
+\item{...}{Currently not used}
 }
 \value{
 A density plot with the results of the cross-validation and an (invisible) \code{data.frame} with these results
 }
 \description{
-Performs repeated cross-validation and represents results in a plot
+Performs repeated cross-validatiodn and represents results in a plot
 }

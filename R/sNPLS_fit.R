@@ -372,15 +372,21 @@ predict.sNPLS <- function(object, newX, rescale = TRUE, ...) {
 #'
 #' @description Plot function for visualization of cross validation results for sNPLS models
 #' @param x A cv_sNPLS object
+#' @param facets Chose between a facet plot or a 3-D scatter plot
 #' @param ... Arguments passed to \code{car::scatter3d}
 #' @return A 3D scatter plot with the results of the cross validation
 #' @export
-plot.cvsNPLS <- function(x, ...) {
-  car::scatter3d(x$cv_grid$keepJ, x$cv_mean, x$cv_grid$keepK, groups = if (length(unique(x$cv_grid$ncomp)) >
-                                                                           1)
-    factor(x$cv_grid$ncomp) else NULL, surface = TRUE, fit = "smooth", axis.col = c("black", "black", "black"), xlab = "KeepJ",
-    ylab = "CVE", zlab = "KeepK", parallel = FALSE, ...)
-  rgl::grid3d(c("x", "y", "z"), col = "gray", lwd = 1, lty = 1, n = 5)
+plot.cvsNPLS <- function(x, facets=TRUE, ...) {
+  df_grid <- data.frame(KeepJ=x$cv_grid$keepJ, KeepK=paste("KeepK =", x$cv_grid$keepK, sep=" "), CVE=x$cv_mean, Ncomp=paste("Ncomp =", x$cv_grid$ncomp, sep=" "))
+  if(facets){
+    ggplot2::ggplot(df_grid, ggplot2::aes_string(x="KeepJ", y="CVE"))+ggplot2::geom_line()+ggplot2::facet_grid(KeepK ~ Ncomp)+
+      ggplot2::scale_x_continuous(breaks=if(round(diff(range(df_grid$KeepJ)))<=10) round(max(0, min(df_grid$KeepJ)):max(df_grid$KeepJ)) else round(seq(max(0, min(df_grid$KeepJ)), max(df_grid$KeepJ), by= ceiling(max(df_grid$KeepJ)/20)*2)))+
+      ggplot2::theme_bw()
+  } else{
+    car::scatter3d(x$cv_grid$keepJ, x$cv_mean, x$cv_grid$keepK, groups = if (length(unique(x$cv_grid$ncomp)) > 1) factor(x$cv_grid$ncomp) else NULL,
+                   surface = TRUE, fit = "smooth", axis.col = c("black", "black", "black"), xlab = "KeepJ", ylab = "CVE", zlab = "KeepK", parallel = FALSE, ...)
+    rgl::grid3d(c("x", "y", "z"), col = "gray", lwd = 1, lty = 1, n = 5)
+  }
 }
 
 #' Coefficients from a sNPLS model
@@ -395,14 +401,17 @@ coef.sNPLS <- function(object, as.matrix = FALSE, ...) {
   R <- Rmatrix(object)
   Bnpls <- R %*% object$B %*% t(object$Q)
   colnames(Bnpls) <- "Estimate"
-  if (as.matrix)
+  if (as.matrix){
     dim(Bnpls) <- c(dim(object$Wj)[1], dim(object$Wk)[1])
+    rownames(Bnpls) <- rownames(object$Wj)
+    colnames(Bnpls) <- rownames(object$Wk)
+  }
   return(Bnpls)
 }
 
 #' Repeated cross-validation for sNPLS models
 #'
-#' @description Performs repeated cross-validation and represents results in a plot
+#' @description Performs repeated cross-validatiodn and represents results in a plot
 #' @param X_npls A three-way array containing the predictors.
 #' @param Y_npls A matrix containing the response.
 #' @param ncomp A vector with the different number of components to test
@@ -411,12 +420,13 @@ coef.sNPLS <- function(object, as.matrix = FALSE, ...) {
 #' @param nfold Number of folds for the cross-validation
 #' @param parallel Should the computations be performed in parallel?
 #' @param free_cores If parallel computations are performed how many cores are left unused
+#' @param ... Currently not used
 #' @param times Number of repetitions of the cross-validation
 #' @return A density plot with the results of the cross-validation and an (invisible) \code{data.frame} with these results
 #' @importFrom stats var
 #' @export
 repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK = 1:dim(X_npls)[3],
-                    nfold = 10, parallel = TRUE, free_cores = 2, times=30){
+                    nfold = 10, parallel = TRUE, free_cores = 2, times=30, ...){
   if(parallel & (parallel::detectCores()>1)){
     cl <- parallel::makeCluster(max(2, parallel::detectCores() - free_cores))
     parallel::clusterExport(cl, list(deparse(substitute(X_npls)), deparse(substitute(Y_npls))))
@@ -428,14 +438,53 @@ repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK =
   }
   resdata<-data.frame(ncomp=sapply(rep_cv[1,], function(x) x[[1]]), keepJ=sapply(rep_cv[1,], function(x) x[[2]]),
                       keepK=sapply(rep_cv[1,], function(x) x[[3]]))
-  invariantes<-names(resdata)[sapply(resdata, function(x) var(x, na.rm=TRUE)==0)]
-  resdata2<-resdata[,sapply(resdata, function(x) var(x, na.rm=TRUE)!=0)]
-  H.pi <- ks::Hpi(resdata2)
-  fhat <- ks::kde(resdata2, H=H.pi, compute.cont=TRUE)
-  print(paste(invariantes, " is(are) constant with a value of ", resdata[1,invariantes], sep=""))
-  plot(fhat)
-  return(invisible(resdata))
+  class(resdata)<-c("repeatcv", "data.frame")
+  return(resdata)
 }
+
+#' Density plot for repat_cv results
+#'
+#' @description Plots a grid of slices from the 3-D kernel denity estimates of the repeat_cv function
+#' @param x A repeatcv object
+#' @param ... Further arguments passed to plot
+#' @return A grid of slices from of a 3-D density plot of the results of the repeated cross-validation
+#' @importFrom grDevices colorRampPalette
+#' @export
+plot.repeatcv <- function(x, ...){
+  x<-x[,sapply(x, function(x) var(x)>0), drop=FALSE]
+  if(ncol(x) == 1){
+    ggplot2::ggplot(x, ggplot2::aes_string(x=colnames(x)))+ggplot2::geom_density(color="gray", fill="gray", alpha=0.3)+ggplot2::theme_classic()
+  } else{
+    H.pi <- ks::Hpi(x)
+    fhat <- ks::kde(x, H=H.pi, compute.cont=TRUE)
+    if(ncol(x) == 3){
+      ncomp_values <- sapply(sort(unique(fhat$x[,1])), function(x) which.min(abs(fhat$eval.points[[1]]-x)))
+      positions <- as.data.frame(fhat$x)
+      positions$Ncomp <- paste("Ncomp =", positions$ncomp)
+      df_grid <- expand.grid(keepJ=fhat$eval.points[[2]], keepK=fhat$eval.points[[3]])
+      combl <- nrow(df_grid)
+      df_grid <- df_grid[rep(1:nrow(df_grid), length(ncomp_values)),]
+      df_grid$density <- unlist(lapply(ncomp_values, function(x) as.numeric(matrix(fhat$estimate[x,,], ncol=1))))
+      df_grid$Ncomp <- rep(paste("Ncomp =", sort(unique(positions$ncomp))), each=combl)
+      ggplot2::ggplot(df_grid, ggplot2::aes_string("keepJ", "keepK", fill="density"))+ggplot2::geom_raster()+
+        ggplot2::scale_fill_gradientn(colours =colorRampPalette(c("white", "blue", "red"))(10))+ggplot2::theme_classic()+
+        ggplot2::geom_count(inherit.aes = FALSE, ggplot2::aes_string(x="keepJ", y="keepK"), data=positions) +ggplot2::facet_grid(~Ncomp)+
+        ggplot2::scale_x_continuous(breaks=if(round(diff(range(df_grid$keepJ)))<=10) round(max(0, min(df_grid$keepJ)):max(df_grid$keepJ)) else round(seq(max(0, min(df_grid$keepJ)), max(df_grid$keepJ), by= ceiling(max(df_grid$keepJ)/20)*2)))+
+        ggplot2::scale_y_continuous(breaks=if(round(diff(range(df_grid$keepK)))<=10) round(max(0, min(df_grid$keepK)):max(df_grid$keepK)) else round(seq(max(0, min(df_grid$keepK)), max(df_grid$keepK), by= ceiling(max(df_grid$keepK)/20)*2)))
+    } else {
+      positions <- as.data.frame(fhat$x)
+      df_grid <- expand.grid(V1=fhat$eval.points[[1]], V2=fhat$eval.points[[2]])
+      names(df_grid)<-colnames(positions)
+      df_grid$density <- as.numeric(matrix(fhat$estimate, ncol=1))
+      ggplot2::ggplot(df_grid, ggplot2::aes_string(colnames(df_grid)[1], colnames(df_grid)[2], fill="density"))+ggplot2::geom_raster()+
+        ggplot2::scale_fill_gradientn(colours =colorRampPalette(c("white", "blue", "red"))(10))+ggplot2::theme_classic()+
+        ggplot2::geom_count(inherit.aes = FALSE, ggplot2::aes_string(x=colnames(df_grid)[1], y=colnames(df_grid)[2]), data=positions)+
+        ggplot2::scale_x_continuous(breaks=if(round(diff(range(df_grid[,1])))<=10) round(max(0, min(df_grid[,1])):max(df_grid[,1])) else round(seq(max(0, min(df_grid[,1])), max(df_grid[,1]), by= ceiling(max(df_grid[,1])/20)*2)))+
+        ggplot2::scale_y_continuous(breaks=if(round(diff(range(df_grid[,2])))<=10) round(max(0, min(df_grid[,2])):max(df_grid[,2])) else round(seq(max(0, min(df_grid[,2])), max(df_grid[,2]), by= ceiling(max(df_grid[,2])/20)*2)))
+    }
+  }
+}
+
 
 #' Summary for sNPLS models
 #'

@@ -4,10 +4,12 @@
 \alias{plot.cvsNPLS}
 \title{Plot cross validation results for sNPLS objects}
 \usage{
-\method{plot}{cvsNPLS}(x, ...)
+\method{plot}{cvsNPLS}(x, facets = TRUE, ...)
 }
 \arguments{
 \item{x}{A cv_sNPLS object}
+
+\item{facets}{Chose between a facet plot or a 3-D scatter plot}
 
 \item{...}{Arguments passed to \code{car::scatter3d}}
 }
