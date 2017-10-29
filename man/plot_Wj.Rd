@@ -4,12 +4,19 @@
 \alias{plot_Wj}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_Wj(x, comps, ...)
+plot_Wj(x, comps, xlim = c(min(x$Wj[, comps[1]]) - diff(range(x$Wj[,
+  comps[1]]))/10, max(x$Wj[, comps[1]]) + diff(range(x$Wj[, comps[1]]))/10),
+  ylim = c(min(x$Wj[, comps[2]]) - diff(range(x$Wj[, comps[2]]))/10,
+  max(x$Wj[, comps[2]]) + diff(range(x$Wj[, comps[2]]))/10), ...)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
 
 \item{comps}{A vector of length two with the components to plot}
+
+\item{xlim}{Limits of the X axis}
+
+\item{ylim}{Limits of the Y axis}
 
 \item{...}{Options passed to \code{plot}}
 }
