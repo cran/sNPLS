@@ -6,6 +6,7 @@
 \usage{
 sNPLS(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
   keepJ = rep(ncol(XN), ncomp), keepK = rep(rev(dim(XN))[1], ncomp),
+  scale.X = TRUE, center.X = TRUE, scale.Y = TRUE, center.Y = TRUE,
   silent = F)
 }
 \arguments{
@@ -22,6 +23,14 @@ sNPLS(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
 \item{keepJ}{Number of variables to keep for each component}
 
 \item{keepK}{Number of 'times' to keep for each component}
+
+\item{scale.X}{Perform unit variance scaling on X?}
+
+\item{center.X}{Perform mean centering on X?}
+
+\item{scale.Y}{Perform unit variance scaling on Y?}
+
+\item{center.Y}{Perform mean centering on Y?}
 
 \item{silent}{Show output?}
 }

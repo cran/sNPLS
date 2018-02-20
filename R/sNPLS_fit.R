@@ -8,6 +8,10 @@
 #' @param max.iteration Maximum number of iterations
 #' @param keepJ Number of variables to keep for each component
 #' @param keepK Number of 'times' to keep for each component
+#' @param scale.X Perform unit variance scaling on X?
+#' @param center.X Perform mean centering on X?
+#' @param scale.Y Perform unit variance scaling on Y?
+#' @param center.Y Perform mean centering on Y?
 #' @param silent Show output?
 #' @return A fitted sNPLS model
 #' @references C. A. Andersson and R. Bro. The N-way Toolbox for MATLAB Chemometrics & Intelligent Laboratory Systems. 52 (1):1-4, 2000.
@@ -23,9 +27,10 @@
 #' @export
 sNPLS <- function(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
                   keepJ = rep(ncol(XN), ncomp), keepK = rep(rev(dim(XN))[1], ncomp),
-                  silent = F) {
+                  scale.X=TRUE, center.X=TRUE, scale.Y=TRUE, center.Y=TRUE, silent = F) {
 
     mynorm <- function(x) sqrt(sum(diag(crossprod(x))))
+    if (length(dim(Y)) == 3) Y <- unfold3w(Y)
     if (length(dim(XN)) != 3)
         stop("'XN' is not a three-way array")
     if (!is.null(rownames(XN)))
@@ -36,11 +41,15 @@ sNPLS <- function(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
         x3d.names <- dimnames(XN)[[3]] else x3d.names <- paste("Z.", 1:dim(XN)[3], sep = "")
     if (!is.null(colnames(Y)))
         yvar.names <- colnames(Y) else yvar.names <- paste("Y.", 1:dim(Y)[2], sep = "")
+    if(!center.X) center.X <- rep(0, ncol(XN)*dim(XN)[3])
+    if(!center.Y) center.Y <- rep(0, ncol(Y))
+    if(!scale.X) scale.X <- rep(1, ncol(XN)*dim(XN)[3])
+    if(!scale.Y) scale.Y <- rep(1, ncol(Y))
 
     # Matrices initialization
     Tm <- U <- Q <- WsupraJ <- WsupraK <- X <- P <- NULL
     Yorig <- Y
-    Y <- scale(Y)
+    Y <- scale(Y, center = center.Y, scale = scale.Y)
     y_center <- attr(Y, "scaled:center")
     y_scale <- attr(Y, "scaled:scale")
     B <- matrix(0, ncol = ncomp, nrow = ncomp)
@@ -54,7 +63,7 @@ sNPLS <- function(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
       X[,apply(X, 2, sd)==0] <- apply(X[,apply(X, 2, sd)==0, drop=FALSE], 2, function(x) jitter(x))
     }
     # Center and scale
-    Xd <- scale(X)
+    Xd <- scale(X, center = center.X, scale = scale.X)
     x_center <- attr(Xd, "scaled:center")
     x_scale <- attr(Xd, "scaled:scale")
 
@@ -88,8 +97,8 @@ sNPLS <- function(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
             uf <- Y %*% qf
             if (sum((uf - u)^2) < conver) {
                 if (!silent) {
-                  print(paste("Component number ", f))
-                  print(paste("Number of iterations: ", it))
+                  cat(paste("Component number ", f, "\n"))
+                  cat(paste("Number of iterations: ", it, "\n"))
                 }
                 it <- max.iteration
                 Tm <- cbind(Tm, tf)
@@ -180,6 +189,7 @@ unfold3w <- function(x) {
 #' @param nfold Number of folds for the cross-validation
 #' @param parallel Should the computations be performed in parallel?
 #' @param free_cores If parallel computations are performed how many cores are left unused
+#' @param ... Further arguments passed to sNPLS
 #' @return A list with the best parameters for the model and the CV error
 #' @examples
 #' \dontrun{
@@ -192,14 +202,15 @@ unfold3w <- function(x) {
 #' }
 #' @export
 cv_snpls <- function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
-                     keepK = 1:dim(X_npls)[3], nfold = 10, parallel = TRUE, free_cores = 2) {
+                     keepK = 1:dim(X_npls)[3], nfold = 10, parallel = TRUE, free_cores = 2, ...) {
     if (parallel & (parallel::detectCores()>1)) {
         cl <- parallel::makeCluster(max(2, parallel::detectCores() - free_cores))
         parallel::clusterExport(cl, list(deparse(substitute(X_npls)),
                                          deparse(substitute(Y_npls))))
         parallel::clusterCall(cl, function() require(sNPLS))
     }
-    top <- ceiling(dim(X_npls)[1]/nfold)
+  if(length(dim(Y_npls)) == 3) Y_npls <- unfold3w(Y_npls)
+  top <- ceiling(dim(X_npls)[1]/nfold)
     foldid <- sample(rep(1:nfold, top), dim(X_npls)[1], replace = F)
     search.grid <- expand.grid(list(ncomp = ncomp, keepJ = keepJ, keepK = keepK))
     SqrdE <- numeric()
@@ -211,7 +222,7 @@ cv_snpls <- function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
                             yval = Y_npls[x == foldid, , drop = FALSE],
                             ncomp = y["ncomp"],
                             keepJ = rep(y["keepJ"], y["ncomp"]),
-                            keepK = rep(y["keepK"], y["ncomp"])),
+                            keepK = rep(y["keepK"], y["ncomp"]), ...),
                      error=function(x) NA)
           })
     }
@@ -237,11 +248,12 @@ cv_snpls <- function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
 #' @param ncomp Number of components for the sNPLS model
 #' @param keepJ Number of variables to keep for each component
 #' @param keepK Number of 'times' to keep for each component
+#' @param ... Further arguments passed to sNPLS
 #' @return Returns the CV mean squared error
 #' @export
-cv_fit <- function(xtrain, ytrain, xval, yval, ncomp, keepJ, keepK) {
+cv_fit <- function(xtrain, ytrain, xval, yval, ncomp, keepJ, keepK, ...) {
   fit <- sNPLS(XN = xtrain, Y = ytrain, ncomp = ncomp, keepJ = keepJ,
-               keepK = keepK, silent = TRUE)
+               keepK = keepK, silent = TRUE, ...)
   Y_pred <- predict(fit, xval)
   CVE <- sqrt(mean((Y_pred - yval)^2))
   return(CVE)
@@ -439,7 +451,9 @@ plot_variables <- function(x, comps, xlab="Variables", ...) {
 predict.sNPLS <- function(object, newX, rescale = TRUE, ...) {
   newX <- unfold3w(newX)
   # Centrado y escalado
-  Xstd <- t((t(newX) - object$Standarization$CenterX)/object$Standarization$ScaleX)
+  #Xstd <- t((t(newX) - object$Standarization$CenterX)/object$Standarization$ScaleX)
+  #Xstd <- sweep(sweep(newX, 2, object$Standarization$CenterX), 2, object$Standarization$ScaleX, "/")
+  Xstd <- scale(newX, center=object$Standarization$CenterX, scale=object$Standarization$ScaleX)
   R <- Rmatrix(object)
   Bnpls <- R %*% object$B %*% t(object$Q)
   Yval <- Xstd %*% Bnpls
@@ -447,6 +461,17 @@ predict.sNPLS <- function(object, newX, rescale = TRUE, ...) {
     Yval <- Yval * object$Standarization$ScaleY + object$Standarization$CenterY
   }
   return(Yval)
+}
+
+#' Fitted method for sNPLS models
+#'
+#' @description Fitted method for sNPLS models
+#' @param object A sNPLS model fit
+#' @param ... Further arguments passed to \code{fitted}
+#' @return Fitted values for the sNPLS model
+#' @export
+fitted.sNPLS <- function(object, ...){
+  return(object$Yadj)
 }
 
 #' Plot cross validation results for sNPLS objects
@@ -481,9 +506,9 @@ plot.cvsNPLS <- function(x, facets=TRUE, ...) {
 coef.sNPLS <- function(object, as.matrix = FALSE, ...) {
   R <- Rmatrix(object)
   Bnpls <- R %*% object$B %*% t(object$Q)
-  colnames(Bnpls) <- "Estimate"
+  colnames(Bnpls) <- paste("Estimate", colnames(Bnpls))
   if (as.matrix){
-    dim(Bnpls) <- c(dim(object$Wj)[1], dim(object$Wk)[1])
+    dim(Bnpls) <- c(dim(object$Wj)[1], dim(object$Wk)[1], dim(Bnpls)[2])
     rownames(Bnpls) <- rownames(object$Wj)
     colnames(Bnpls) <- rownames(object$Wk)
   }
@@ -501,7 +526,7 @@ coef.sNPLS <- function(object, as.matrix = FALSE, ...) {
 #' @param nfold Number of folds for the cross-validation
 #' @param parallel Should the computations be performed in parallel?
 #' @param free_cores If parallel computations are performed how many cores are left unused
-#' @param ... Currently not used
+#' @param ... Further arguments passed to cv_snpls
 #' @param times Number of repetitions of the cross-validation
 #' @return A density plot with the results of the cross-validation and an (invisible) \code{data.frame} with these results
 #' @importFrom stats var
@@ -512,10 +537,10 @@ repeat_cv<-function(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls), keepK =
     cl <- parallel::makeCluster(max(2, parallel::detectCores() - free_cores))
     parallel::clusterExport(cl, list(deparse(substitute(X_npls)), deparse(substitute(Y_npls))))
     parallel::clusterCall(cl, function() require(sNPLS))
-    rep_cv<-parallel::parSapply(cl, 1:times, function(x) cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = FALSE, nfold = nfold))
+    rep_cv<-parallel::parSapply(cl, 1:times, function(x) cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = FALSE, nfold = nfold, ...))
     parallel::stopCluster(cl)
   } else {
-    rep_cv<-pbapply::pbreplicate(times, cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = FALSE, nfold = nfold))
+    rep_cv<-pbapply::pbreplicate(times, cv_snpls(X_npls, Y_npls, ncomp=ncomp, keepJ = keepJ, keepK = keepK, parallel = FALSE, nfold = nfold, ...))
   }
   resdata<-data.frame(ncomp=sapply(rep_cv[1,], function(x) x[[1]]), keepJ=sapply(rep_cv[1,], function(x) x[[2]]),
                       keepK=sapply(rep_cv[1,], function(x) x[[3]]))

@@ -5,7 +5,8 @@
 \title{Cross-validation for a sNPLS model}
 \usage{
 cv_snpls(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
-  keepK = 1:dim(X_npls)[3], nfold = 10, parallel = TRUE, free_cores = 2)
+  keepK = 1:dim(X_npls)[3], nfold = 10, parallel = TRUE, free_cores = 2,
+  ...)
 }
 \arguments{
 \item{X_npls}{A three-way array containing the predictors.}
@@ -23,6 +24,8 @@ cv_snpls(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
 \item{parallel}{Should the computations be performed in parallel?}
 
 \item{free_cores}{If parallel computations are performed how many cores are left unused}
+
+\item{...}{Further arguments passed to sNPLS}
 }
 \value{
 A list with the best parameters for the model and the CV error

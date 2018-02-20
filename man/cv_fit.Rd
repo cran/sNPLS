@@ -4,7 +4,7 @@
 \alias{cv_fit}
 \title{Internal function for \code{cv_snpls}}
 \usage{
-cv_fit(xtrain, ytrain, xval, yval, ncomp, keepJ, keepK)
+cv_fit(xtrain, ytrain, xval, yval, ncomp, keepJ, keepK, ...)
 }
 \arguments{
 \item{xtrain}{A three-way training array}
@@ -20,6 +20,8 @@ cv_fit(xtrain, ytrain, xval, yval, ncomp, keepJ, keepK)
 \item{keepJ}{Number of variables to keep for each component}
 
 \item{keepK}{Number of 'times' to keep for each component}
+
+\item{...}{Further arguments passed to sNPLS}
 }
 \value{
 Returns the CV mean squared error
