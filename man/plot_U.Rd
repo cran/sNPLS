@@ -4,21 +4,16 @@
 \alias{plot_U}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_U(x, comps, ylim = c(min(x$U[, comps[2]]) - diff(range(x$U[,
-  comps[2]]))/10, max(x$U[, comps[2]]) + diff(range(x$U[, comps[2]]))/10),
-  xlim = c(min(x$U[, comps[1]]) - diff(range(x$U[, comps[1]]))/10, max(x$U[,
-  comps[1]]) + diff(range(x$U[, comps[1]]))/10), ...)
+plot_U(x, comps, labels, group = NULL)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
 
 \item{comps}{A vector of length two with the components to plot}
 
-\item{ylim}{Limits of the Y axis}
+\item{labels}{Should rownames be added as labels to the plot?}
 
-\item{xlim}{Limits of the X axis}
-
-\item{...}{Options passed to \code{plot}}
+\item{group}{Vector with categorical variable defining groups}
 }
 \value{
 A plot of the U matrix of a sNPLS model fit

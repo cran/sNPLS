@@ -4,9 +4,18 @@
 \alias{cv_snpls}
 \title{Cross-validation for a sNPLS model}
 \usage{
-cv_snpls(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
-  keepK = 1:dim(X_npls)[3], nfold = 10, parallel = TRUE, free_cores = 2,
-  ...)
+cv_snpls(
+  X_npls,
+  Y_npls,
+  ncomp = 1:3,
+  samples = 20,
+  keepJ = NULL,
+  keepK = NULL,
+  nfold = 10,
+  parallel = TRUE,
+  method = "sNPLS",
+  ...
+)
 }
 \arguments{
 \item{X_npls}{A three-way array containing the predictors.}
@@ -15,15 +24,17 @@ cv_snpls(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
 
 \item{ncomp}{A vector with the different number of components to test}
 
-\item{keepJ}{A vector with the different number of selected variables to test}
+\item{samples}{Number of samples for performing random search in continuous thresholding}
 
-\item{keepK}{A vector with the different number of selected 'times' to test}
+\item{keepJ}{A vector with the different number of selected variables to test for discrete thresholding}
+
+\item{keepK}{A vector with the different number of selected 'times' to test for discrete thresholding}
 
 \item{nfold}{Number of folds for the cross-validation}
 
-\item{parallel}{Should the computations be performed in parallel?}
+\item{parallel}{Should the computations be performed in parallel? Set up strategy first with \code{future::plan()}}
 
-\item{free_cores}{If parallel computations are performed how many cores are left unused}
+\item{method}{Select between sNPLS, sNPLS-SR or sNPLS-VIP}
 
 \item{...}{Further arguments passed to sNPLS}
 }
@@ -39,7 +50,9 @@ X_npls<-array(rpois(7500, 10), dim=c(50, 50, 3))
 
 Y_npls<-matrix(2+0.4*X_npls[,5,1]+0.7*X_npls[,10,1]-0.9*X_npls[,15,1]+
 0.6*X_npls[,20,1]- 0.5*X_npls[,25,1]+rnorm(50), ncol=1)
-
+#Grid search for discrete thresholding
 cv1<- cv_snpls(X_npls, Y_npls, ncomp=1:2, keepJ = 1:3, keepK = 1:2, parallel = FALSE)
+#Random search for continuous thresholding
+cv2<- cv_snpls(X_npls, Y_npls, ncomp=1:2, samples=20, parallel = FALSE)
 }
 }

@@ -4,21 +4,14 @@
 \alias{plot_Wk}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_Wk(x, comps, xlim = c(min(x$Wk[, comps[1]]) - diff(range(x$Wk[,
-  comps[1]]))/10, max(x$Wk[, comps[1]]) + diff(range(x$Wk[, comps[1]]))/10),
-  ylim = c(min(x$Wk[, comps[2]]) - diff(range(x$Wk[, comps[2]]))/10,
-  max(x$Wk[, comps[2]]) + diff(range(x$Wk[, comps[2]]))/10), ...)
+plot_Wk(x, comps, labels)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
 
 \item{comps}{A vector of length two with the components to plot}
 
-\item{xlim}{Limits of the X axis}
-
-\item{ylim}{Limits of the Y axis}
-
-\item{...}{Options passed to \code{plot}}
+\item{labels}{Should rownames be added as labels to the plot?}
 }
 \value{
 A plot of the Wk coefficients

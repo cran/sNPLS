@@ -4,9 +4,19 @@
 \alias{repeat_cv}
 \title{Repeated cross-validation for sNPLS models}
 \usage{
-repeat_cv(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
-  keepK = 1:dim(X_npls)[3], nfold = 10, parallel = TRUE, free_cores = 2,
-  times = 30, ...)
+repeat_cv(
+  X_npls,
+  Y_npls,
+  ncomp = 1:3,
+  samples = 20,
+  keepJ = NULL,
+  keepK = NULL,
+  nfold = 10,
+  times = 30,
+  parallel = TRUE,
+  method = "sNPLS",
+  ...
+)
 }
 \arguments{
 \item{X_npls}{A three-way array containing the predictors.}
@@ -15,17 +25,19 @@ repeat_cv(X_npls, Y_npls, ncomp = 1:3, keepJ = 1:ncol(X_npls),
 
 \item{ncomp}{A vector with the different number of components to test}
 
-\item{keepJ}{A vector with the different number of selected variables to test}
+\item{samples}{Number of samples for performing random search in continuous thresholding}
 
-\item{keepK}{A vector with the different number of selected 'times' to test}
+\item{keepJ}{A vector with the different number of selected variables to test in discrete thresholding}
+
+\item{keepK}{A vector with the different number of selected 'times' to test in discrete thresholding}
 
 \item{nfold}{Number of folds for the cross-validation}
 
-\item{parallel}{Should the computations be performed in parallel?}
-
-\item{free_cores}{If parallel computations are performed how many cores are left unused}
-
 \item{times}{Number of repetitions of the cross-validation}
+
+\item{parallel}{Should the computations be performed in parallel? Set up strategy first with \code{future::plan()}}
+
+\item{method}{Select between sNPLS, sNPLS-SR or sNPLS-VIP}
 
 \item{...}{Further arguments passed to cv_snpls}
 }

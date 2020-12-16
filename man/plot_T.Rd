@@ -4,21 +4,16 @@
 \alias{plot_T}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_T(x, comps, xlim = c(min(x$T[, comps[1]]) - diff(range(x$T[,
-  comps[1]]))/10, max(x$T[, comps[1]]) + diff(range(x$T[, comps[1]]))/10),
-  ylim = c(min(x$T[, comps[2]]) - diff(range(x$T[, comps[2]]))/10, max(x$T[,
-  comps[2]]) + diff(range(x$T[, comps[2]]))/10), ...)
+plot_T(x, comps, labels, group = NULL)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
 
 \item{comps}{A vector of length two with the components to plot}
 
-\item{xlim}{Limits of the X axis}
+\item{labels}{Should rownames be added as labels to the plot?}
 
-\item{ylim}{Limits of the Y axis}
-
-\item{...}{Options passed to \code{plot}}
+\item{group}{Vector with categorical variable defining groups}
 }
 \value{
 A plot of the T matrix of a sNPLS model fit

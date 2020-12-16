@@ -4,10 +4,23 @@
 \alias{sNPLS}
 \title{Fit a sNPLS model}
 \usage{
-sNPLS(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
-  keepJ = rep(ncol(XN), ncomp), keepK = rep(rev(dim(XN))[1], ncomp),
-  scale.X = TRUE, center.X = TRUE, scale.Y = TRUE, center.Y = TRUE,
-  silent = F)
+sNPLS(
+  XN,
+  Y,
+  ncomp = 2,
+  threshold_j = 0.5,
+  threshold_k = 0.5,
+  keepJ = NULL,
+  keepK = NULL,
+  scale.X = TRUE,
+  center.X = TRUE,
+  scale.Y = TRUE,
+  center.Y = TRUE,
+  conver = 1e-16,
+  max.iteration = 10000,
+  silent = F,
+  method = "sNPLS"
+)
 }
 \arguments{
 \item{XN}{A three-way array containing the predictors.}
@@ -16,13 +29,13 @@ sNPLS(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
 
 \item{ncomp}{Number of components in the projection}
 
-\item{conver}{Convergence criterion}
+\item{threshold_j}{Threshold value on Wj. Scaled between [0, 1)}
 
-\item{max.iteration}{Maximum number of iterations}
+\item{threshold_k}{Threshold value on Wk. scaled between [0, 1)}
 
-\item{keepJ}{Number of variables to keep for each component}
+\item{keepJ}{Number of variables to keep for each component, ignored if threshold_j is provided}
 
-\item{keepK}{Number of 'times' to keep for each component}
+\item{keepK}{Number of 'times' to keep for each component, ignored if threshold_k is provided}
 
 \item{scale.X}{Perform unit variance scaling on X?}
 
@@ -32,24 +45,34 @@ sNPLS(XN, Y, ncomp = 2, conver = 1e-16, max.iteration = 10000,
 
 \item{center.Y}{Perform mean centering on Y?}
 
+\item{conver}{Convergence criterion}
+
+\item{max.iteration}{Maximum number of iterations}
+
 \item{silent}{Show output?}
+
+\item{method}{Select between L1 penalization (sNPLS), variable selection with Selectivity Ratio (sNPLS-SR) or variable selection with VIP (sNPLS-VIP)}
 }
 \value{
 A fitted sNPLS model
 }
 \description{
-Fits a N-PLS regression model imposing a L1 penalization on \code{wj} and \code{wk} matrices
+Fits a N-PLS regression model imposing sparsity on \code{wj} and \code{wk} matrices
 }
 \examples{
 X_npls<-array(rpois(7500, 10), dim=c(50, 50, 3))
 
-Y_npls<-matrix(2+0.4*X_npls[,5,1]+0.7*X_npls[,10,1]-0.9*X_npls[,15,1]+
+Y_npls <- matrix(2+0.4*X_npls[,5,1]+0.7*X_npls[,10,1]-0.9*X_npls[,15,1]+
 0.6*X_npls[,20,1]- 0.5*X_npls[,25,1]+rnorm(50), ncol=1)
-
-fit<-sNPLS(X_npls, Y_npls, ncomp=3, keepJ = rep(2,3) , keepK = rep(1,3))
+#Discrete thresholding
+fit <- sNPLS(X_npls, Y_npls, ncomp=3, keepJ = rep(2,3) , keepK = rep(1,3))
+#Continuous thresholding
+fit2 <- sNPLS(X_npls, Y_npls, ncomp=3, threshold_j=0.5, threshold_k=0.5)
+#USe sNPLS-SR method
+fit3 <- sNPLS(X_npls, Y_npls, ncomp=3, threshold_j=0.5, threshold_k=0.5, method="sNPLS-SR")
 }
 \references{
 C. A. Andersson and R. Bro. The N-way Toolbox for MATLAB Chemometrics & Intelligent Laboratory Systems. 52 (1):1-4, 2000.
 
-Shen, H. and Huang, J. Z. (2008). Sparse principal component analysis via regularized low rank matrix approximation. Journal of Multivariate Analysis 99, 1015-1034
+Hervas, D. Prats-Montalban, J. M., Garcia-Cañaveras, J. C., Lahoz, A., & Ferrer, A. (2019). Sparse N-way partial least squares by L1-penalization. Chemometrics and Intelligent Laboratory Systems, 185, 85-91.
 }

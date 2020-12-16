@@ -4,16 +4,12 @@
 \alias{plot_variables}
 \title{Internal function for \code{plot.sNPLS}}
 \usage{
-plot_variables(x, comps, xlab = "Variables", ...)
+plot_variables(x, comps)
 }
 \arguments{
 \item{x}{A sNPLS model fit}
 
 \item{comps}{A vector with the components to plot}
-
-\item{xlab}{X-axis label}
-
-\item{...}{Options passed to \code{plot}}
 }
 \value{
 A plot of Wj coefficients for each component
