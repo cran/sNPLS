@@ -15,6 +15,7 @@ cv_fit(
   keepJ = NULL,
   keepK = NULL,
   method,
+  metric,
   ...
 )
 }
@@ -39,10 +40,12 @@ cv_fit(
 
 \item{method}{Select between sNPLS, sNPLS-SR or sNPLS-VIP}
 
+\item{metric}{Performance metric (RMSE or AUC)}
+
 \item{...}{Further arguments passed to sNPLS}
 }
 \value{
-Returns the CV mean squared error
+Returns the CV root mean squared error or AUC
 }
 \description{
 Internal function for \code{cv_snpls}

@@ -11,10 +11,13 @@ repeat_cv(
   samples = 20,
   keepJ = NULL,
   keepK = NULL,
+  threshold_j = c(0, 1),
+  threshold_k = c(0, 1),
   nfold = 10,
   times = 30,
   parallel = TRUE,
   method = "sNPLS",
+  metric = "RMSE",
   ...
 )
 }
@@ -31,6 +34,10 @@ repeat_cv(
 
 \item{keepK}{A vector with the different number of selected 'times' to test in discrete thresholding}
 
+\item{threshold_j}{Vector with threshold min and max values on Wj. Scaled between [0, 1)}
+
+\item{threshold_k}{Vector with threshold min and max values on Wk. Scaled between [0, 1)}
+
 \item{nfold}{Number of folds for the cross-validation}
 
 \item{times}{Number of repetitions of the cross-validation}
@@ -38,6 +45,8 @@ repeat_cv(
 \item{parallel}{Should the computations be performed in parallel? Set up strategy first with \code{future::plan()}}
 
 \item{method}{Select between sNPLS, sNPLS-SR or sNPLS-VIP}
+
+\item{metric}{Select between RMSE or AUC (for 0/1 response)}
 
 \item{...}{Further arguments passed to cv_snpls}
 }

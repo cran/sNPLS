@@ -9,11 +9,14 @@ cv_snpls(
   Y_npls,
   ncomp = 1:3,
   samples = 20,
+  threshold_j = c(0, 1),
+  threshold_k = c(0, 1),
   keepJ = NULL,
   keepK = NULL,
   nfold = 10,
   parallel = TRUE,
   method = "sNPLS",
+  metric = "RMSE",
   ...
 )
 }
@@ -26,6 +29,10 @@ cv_snpls(
 
 \item{samples}{Number of samples for performing random search in continuous thresholding}
 
+\item{threshold_j}{Vector with threshold min and max values on Wj. Scaled between [0, 1)}
+
+\item{threshold_k}{Vector with threshold min and max values on Wk. Scaled between [0, 1)}
+
 \item{keepJ}{A vector with the different number of selected variables to test for discrete thresholding}
 
 \item{keepK}{A vector with the different number of selected 'times' to test for discrete thresholding}
@@ -35,6 +42,8 @@ cv_snpls(
 \item{parallel}{Should the computations be performed in parallel? Set up strategy first with \code{future::plan()}}
 
 \item{method}{Select between sNPLS, sNPLS-SR or sNPLS-VIP}
+
+\item{metric}{Select between RMSE or AUC (for 0/1 response)}
 
 \item{...}{Further arguments passed to sNPLS}
 }

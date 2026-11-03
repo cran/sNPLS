@@ -1,12 +1,13 @@
 Package: sNPLS
 Type: Package
 Title: NPLS Regression with L1 Penalization
-Version: 1.0.27
-Author: David Hervas
+Version: 1.0.41
+Authors@R: person(given="David", family="Hervas", role = c("aut", "cre"),
+                      email = "ddhervas@yahoo.es")
 Maintainer: David Hervas <ddhervas@yahoo.es>
 Depends: R (>= 2.10)
-Imports: clickR, future, future.apply, ggplot2, ggrepel, ks, MASS,
-        Matrix, pbapply
+Imports: clickR, future, future.apply, GA, ggplot2, ggrepel, ks, MASS,
+        Matrix, pbapply, pROC, rlang
 Description: Tools for performing variable selection in three-way data using N-PLS 
     in combination with L1 penalization, Selectivity Ratio and VIP scores. 
     The N-PLS model (Rasmus Bro, 1996 <DOI:10.1002/(SICI)1099-128X(199601)10:1%3C47::AID-CEM400%3E3.0.CO;2-C>) 
@@ -16,8 +17,9 @@ Description: Tools for performing variable selection in three-way data using N-P
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2020-12-16 10:18:46 UTC; aghil
+Packaged: 2026-11-03 11:54:19 UTC; aghil
 Repository: CRAN
-Date/Publication: 2020-12-16 12:50:02 UTC
+Date/Publication: 2026-11-03 23:00:13 UTC
+Author: David Hervas [aut, cre]
